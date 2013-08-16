@@ -19,10 +19,13 @@ MKDIR_P = mkdir -p
 LAUNCH_TYPE = @LIBI_STARTUP_METHOD@
 BUILD_SHARED_LIBS = @BUILDSHARED@
 
+LIBI_KVS = @LIBI_KVS_TYPE@
+
 ROOTDIR   = @libi_root@
 LIBI_ROOT = $(ROOTDIR)
 
 SRC_DIR   = $(LIBI_ROOT)/src
+EXT_DIR  = $(LIBI_ROOT)/external
 
 PLATDIR = @PLATFORM_BUILD@
 BINDIR  = $(PLATDIR)/bin
@@ -65,13 +68,20 @@ else
                  ProcessGroupMember_MULTIRSH.C
 endif
 
+ifeq ($(LIBI_KVS), zht)
+    INCLUDES  += -I$(EXT_DIR)/zht/include
+    LIBI_SRCS += KVS.cxx
+    LIB_FOR_LIBI = -L$(EXT_DIR)/zht/lib -lzht
+endif
+
+
 LIBI_OBJS = $(addprefix $(OBJDIR)/, $(patsubst %.cxx,%.o,$(patsubst %.C,%.o,$(patsubst %.c,%.o,$(notdir $(LIBI_SRCS))))))
 
 LIBLIBI_HEADERS = $(wildcard $(libi_incdir)/*.h)
 INSTALL_LIBI_HEADERS = $(addprefix $(install_libi_incdir)/, $(notdir $(LIBLIBI_HEADERS)))
 
 CXX           = @CXX@
-CXXFLAGS      = @CXXFLAGS@ $(INCLUDES)
+CXXFLAGS      = @CXXFLAGS@ $(INCLUDES) $(LIB_FOR_LIBI)
 SOFLAGS       = @SOFLAGS@
 
 # for xplat

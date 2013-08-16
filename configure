@@ -644,6 +644,7 @@ GREP
 CXXCPP
 BUILDSHARED
 XPLAT_IDIR
+LIBI_KVS_TYPE
 OBJEXT
 EXEEXT
 ac_ct_CXX
@@ -706,6 +707,7 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 with_libi_startup
+with_libi_kvs
 with_xplat
 with_launchmon
 enable_shared
@@ -1345,6 +1347,8 @@ Optional Packages:
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-libi-startup=METHOD
                           Tree instantiation method - "ssh" (default), "slurm"
+  --with-libi-kvs=KVS_SERVICE_NAME
+                          KVS services - "none" (default), "zht"
   --with-xplat=PATH       Absolute path to installation of XPlat
   --with-launchmon=PATH   Absolute path to installation of LaunchMON
 
@@ -3020,6 +3024,17 @@ if test "${with_libi_startup+set}" = set; then :
 else
   LIBI_STARTUP_METHOD="ssh"
 fi
+
+
+
+# Check whether --with-libi-kvs was given.
+if test "${with_libi_kvs+set}" = set; then :
+  withval=$with_libi_kvs; LIBI_KVS_TYPE="${withval}"
+else
+  LIBI_KVS_TYPE="none"
+
+fi
+
 
 
 

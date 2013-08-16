@@ -29,6 +29,14 @@ AC_ARG_WITH(libi-startup,
             [LIBI_STARTUP_METHOD="${withval}"],
             [LIBI_STARTUP_METHOD="ssh"])
 
+AC_ARG_WITH(libi-kvs,
+        [AS_HELP_STRING([--with-libi-kvs=KVS_SERVICE_NAME], 
+                [KVS services - "none" (default), "zht"])],
+        [LIBI_KVS_TYPE="${withval}"],
+        [LIBI_KVS_TYPE="none"]
+        )
+AC_SUBST(LIBI_KVS_TYPE)
+
 AC_ARG_WITH(xplat,
 	[AS_HELP_STRING([--with-xplat=PATH],
 		[Absolute path to installation of XPlat])],
