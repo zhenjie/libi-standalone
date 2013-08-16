@@ -130,8 +130,8 @@ clean:
 	for file in $(XPLAT_DEPS) $(XPLAT_OBJS) ; do \
 	    if [ -e $$file ] ; then $(RM) $$file ; fi ; \
 	done
-	$(RM) $(LIBDIR)/libxplat.a
-	$(RM) $(TARGET)
+	if [ -e $(LIBDIR)/libxplat.a ] ; then $(RM) $(LIBDIR)/libxplat.a ; fi ;
+	if [ -e $(TARGET) ] ; then $(RM) $(TARGET) ; fi ; 
 
 distclean: clean
 	for file in `find $(SRCDIR) -name "*~" -print` ; do $(RM) $$file ; done

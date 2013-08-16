@@ -82,10 +82,13 @@ all: $(TARGETS)
 examples: 
 	$(MAKE) -f $(PLATDIR)/Makefile.examples all
 
-clean: libi-clean xplat-clean
+clean: libi-clean xplat-clean libi-examples-clean
 
 libi-clean:
 	rm -f $(OBJDIR)/*.o; rm -f $(DEPDIR)/*.d; rm -f $(LIBDIR)/liblibi.a; rm -f $(LIBDIR)/liblibi.so;
+
+libi-examples-clean:
+	$(MAKE) -f $(PLATDIR)/Makefile.examples clean
 
 install-prep:
 	@echo Creating install directories ...
@@ -163,3 +166,4 @@ xplat-sharedobj:
 
 xplat-clean:
 	$(MAKE) -f $(PLATDIR)/Makefile.xplat clean
+

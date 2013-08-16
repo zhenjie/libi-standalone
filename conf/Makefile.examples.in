@@ -106,33 +106,49 @@ TARGETS = testmain testmember
 
 all: $(TARGETS)
 
-EX_TESTMAIN_SRCS = testmain.cxx \
-		debug.cxx \
-		libi_api.cxx
-EX_TESTMAIN_SRCS += ProcessGroup_MULTIRSH.C \
-             ProcessGroupMember_MULTIRSH.C
+EX_TESTMAIN_SRCS = testmain.cxx
 
 EX_TESTMAIN_OBJS = $(addprefix $(OBJDIR)/, $(patsubst %.cxx,%.o,$(patsubst %.C,%.o,$(patsubst %.c,%.o,$(notdir $(EX_TESTMAIN_SRCS))))))
 
 # the order/pos of '$<' maters 
-testmain: $(EX_TESTMAIN_OBJS)
+testmain: $(EX_TESTMAIN_OBJS) $(LIBDIR)/liblibi.a $(LIBDIR)/libxplat.a
 	@echo Building libi example: testmain ...
 	$(CXX) -o $(BINDIR)/$@ $< $(CXXFLAGS) $(LIBLIBI) $(LIBXPLAT) 
 
 
-EX_TESTMEMBER_SRCS = testmember.cxx \
-		debug.cxx \
-		libi_api.cxx
-EX_TESTMEMBER_SRCS += ProcessGroup_MULTIRSH.C \
-             ProcessGroupMember_MULTIRSH.C
+EX_TESTMEMBER_SRCS = testmember.cxx
 
 EX_TESTMEMBER_OBJS = $(addprefix $(OBJDIR)/, $(patsubst %.cxx,%.o,$(patsubst %.C,%.o,$(patsubst %.c,%.o,$(notdir $(EX_TESTMEMBER_SRCS))))))
 
 # the order/pos of '$<' maters 
-testmember: $(EX_TESTMEMBER_OBJS)
+testmember: $(EX_TESTMEMBER_OBJS) $(LIBDIR)/liblibi.a $(LIBDIR)/libxplat.a
 	@echo Building libi example: testmember ...
 	$(CXX) -o $(BINDIR)/$@ $< $(CXXFLAGS) $(LIBLIBI) $(LIBXPLAT) 
 
+
+##############################
+#  They cannot be compiled!  #
+##############################
+# EX_BE_SRCS = sequential_BE.cxx
+
+# EX_BE_OBJS = $(addprefix $(OBJDIR)/, $(patsubst %.cxx,%.o,$(patsubst %.C,%.o,$(patsubst %.c,%.o,$(notdir $(EX_BE_SRCS))))))
+
+# # the order/pos of '$<' maters 
+# sequential_BE: $(EX_BE_OBJS) $(LIBDIR)/liblibi.a $(LIBDIR)/libxplat.a
+# 	@echo Building libi example: sequential_BE ...
+# 	$(CXX) -o $(BINDIR)/$@ $< $(CXXFLAGS) $(LIBLIBI) $(LIBXPLAT) 
+
+# EX_FE_SRCS = sequential_FE.cxx
+
+# EX_FE_OBJS = $(addprefix $(OBJDIR)/, $(patsubst %.cxx,%.o,$(patsubst %.C,%.o,$(patsubst %.c,%.o,$(notdir $(EX_FE_SRCS))))))
+
+# # the order/pos of '$<' maters 
+# sequential_FE: $(EX_FE_OBJS) $(LIBDIR)/liblibi.a $(LIBDIR)/libxplat.a
+# 	@echo Building libi example: sequential_FE ...
+# 	$(CXX) -o $(BINDIR)/$@ $< $(CXXFLAGS) $(LIBLIBI) $(LIBXPLAT) 
+
+clean: 
+	rm -f $(OBJDIR)/*.o; rm -f $(DEPDIR)/*.d; rm -f $(BINDIR)/*
 
 
 # Default Rules
