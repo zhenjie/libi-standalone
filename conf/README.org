@@ -1,0 +1,29 @@
+Developer readme
+
+* Configure
+  files in /conf/:
+  These files are required and do not make any change to them.
+  #+begin_example
+  config.guess
+  config.sub
+  install-sh
+  makedepends.sh
+  #+end_example
+  The following files is where you want to make change,
+  #+begin_example
+  Makefile.in => generate Makefile for LIBI
+  configure.in => generate configure for LIBI, as well as xplat_config.h
+  #+end_example
+  - commands
+    #+begin_src bash
+    autoconf -o configure conf/configure.in => generate configure
+    ./configure  => generate Makefile and xplat_config.h
+    #+end_src
+    
+* After configure, a build folder /build/xxx/xxx/ will be created
+  Goto that folder, compile libi and xplat
+  #+begin_example
+  make => compile and build liblibi.a as well as libxplat.a
+  make examples => build libi simple test case in ./bin/
+  #+end_example
+

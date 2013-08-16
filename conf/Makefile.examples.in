@@ -1,0 +1,163 @@
+
+@SET_MAKE@
+
+#############################
+####  BUILD DIRECTORIES  ####
+#############################
+LIBI_ROOT = @libi_root@
+PLATDIR = @PLATFORM_BUILD@
+BINDIR  = $(PLATDIR)/bin
+LIBDIR  = $(PLATDIR)/lib
+OBJDIR  = $(PLATDIR)/obj/libi
+EXTDIR  = $(LIBI_ROOT)/external
+SRC_DIR   = $(LIBI_ROOT)/src
+DEPDIR  = $(PLATDIR)/depends/libi
+ROOTDIR   = $(LIBI_ROOT)
+XPLATDIR =  $(LIBI_ROOT)/xplat
+
+#############################
+#### INSTALL DIRECTORIES ####
+#############################
+prefix = ${DESTDIR}/@prefix@
+exec_prefix = @exec_prefix@
+IBINDIR = @bindir@
+ILIBDIR = @libdir@
+IINCDIR = @includedir@
+
+############################
+#### AUXILIARY PROGRAMS ####
+############################
+CP      = @CP@
+RM      = @RM@
+
+# libs
+LIBIDIR		 = @LIBI_IDIR@
+LMONDIR          = @LMON_IDIR@
+
+LIBXPLAT         = -lxplat
+
+LDFLAGS = @LDFLAGS@
+SOFLAGS = @SOFLAGS@ 
+LIBLIBI = -L$(LIBIDIR) -llibi
+
+ifeq ($(LIBIMETHOD),slurm)
+    LIBLIBI += -L$(LMONDIR)/lib -lmonfeapi -lmonmwapi -lmonbeapi -lrt
+endif
+
+LIBS                 = -L$(LIBDIR) $(LIBMRNET) 
+ifeq ($(MRNET_STARTUP_METHOD), libi)
+    LIBS             += $(LIBLIBI) 
+endif
+LIBS                 += $(LIBXPLAT) @LIBS@ @EXTRA_LIBS@
+
+# includes
+INCDIRS = -I$(LIBI_ROOT)/include -I$(LIBI_ROOT)/xplat/include -I$(PLATDIR)
+INCDIRS_LIGHTWEIGHT = $(INCDIRS)
+
+# Boost
+HAVE_BOOST = @HAVE_BOOST@
+ifeq ($(HAVE_BOOST), no)
+    INCDIRS += -I$(EXTDIR)/boost/include
+endif
+
+
+#####################################
+#### System Specific Definitions ####
+#####################################
+
+COMPILER_TYPE = @COMPILER_TYPE@
+ifeq ($(COMPILER_TYPE), gnu)
+    WARNFLAGS = -Wall \
+                -Wno-system-headers \
+                -Wfloat-equal \
+                -Wconversion \
+                -Wshadow \
+                -Wpointer-arith \
+                -Wcast-qual \
+                -Wcast-align \
+                -Wwrite-strings \
+                -Wsign-compare \
+                -Wredundant-decls \
+                -Wlong-long
+endif # GCC options
+
+ifeq ($(COMPILER_TYPE), intel)
+    WARNFLAGS = -w2
+endif # Intel options
+
+#ifeq ($(COMPILER_TYPE), forte)
+#    WARNFLAGS = 
+#endif # Sun Forte options
+
+MAKEDEPENDS = $(LIBI_ROOT)/conf/makedepends.sh
+
+CXX = @CXX@
+CC = @CC@
+CXXFLAGS = @CXXFLAGS@ $(INCDIRS) $(WARNFLAGS) -lpthread -g
+CCFLAGS = @CFLAGS@ $(INCDIRS_LIGHTWEIGHT) $(WARNFLAGS_LIGHTWEIGHT)
+
+export
+
+############################
+#### Target Definitions ####
+############################
+
+TARGETS = testmain testmember
+
+all: $(TARGETS)
+
+EX_TESTMAIN_SRCS = testmain.cxx \
+		debug.cxx \
+		libi_api.cxx
+EX_TESTMAIN_SRCS += ProcessGroup_MULTIRSH.C \
+             ProcessGroupMember_MULTIRSH.C
+
+EX_TESTMAIN_OBJS = $(addprefix $(OBJDIR)/, $(patsubst %.cxx,%.o,$(patsubst %.C,%.o,$(patsubst %.c,%.o,$(notdir $(EX_TESTMAIN_SRCS))))))
+
+# the order/pos of '$<' maters 
+testmain: $(EX_TESTMAIN_OBJS)
+	@echo Building libi example: testmain ...
+	$(CXX) -o $(BINDIR)/$@ $< $(CXXFLAGS) $(LIBLIBI) $(LIBXPLAT) 
+
+
+EX_TESTMEMBER_SRCS = testmember.cxx \
+		debug.cxx \
+		libi_api.cxx
+EX_TESTMEMBER_SRCS += ProcessGroup_MULTIRSH.C \
+             ProcessGroupMember_MULTIRSH.C
+
+EX_TESTMEMBER_OBJS = $(addprefix $(OBJDIR)/, $(patsubst %.cxx,%.o,$(patsubst %.C,%.o,$(patsubst %.c,%.o,$(notdir $(EX_TESTMEMBER_SRCS))))))
+
+# the order/pos of '$<' maters 
+testmember: $(EX_TESTMEMBER_OBJS)
+	@echo Building libi example: testmember ...
+	$(CXX) -o $(BINDIR)/$@ $< $(CXXFLAGS) $(LIBLIBI) $(LIBXPLAT) 
+
+
+
+# Default Rules
+$(OBJDIR)/%.o: $(SRC_DIR)/%.c $(DEPDIR)/%.d
+	@echo Compiling `basename $@` ...
+	$(CXX) $(CXXFLAGS) $(C_AS_CPLUSPLUS) -o $@ -c $<
+
+$(OBJDIR)/%.o: $(SRC_DIR)/%.C $(DEPDIR)/%.d
+	@echo Compiling `basename $@` ...
+	$(CXX) $(CXXFLAGS) -o $@ -c $<
+
+$(OBJDIR)/%.o: $(SRC_DIR)/%.cxx $(DEPDIR)/%.d
+	@echo Compiling `basename $@` ...
+	$(CXX) $(CXXFLAGS) -o $@ -c $<
+
+#"Usage:  $cmdname src_file obj_file dep_file [inc_dir]"
+
+$(DEPDIR)/%.d: $(SRC_DIR)/%.c
+	@echo Building Depends File `basename $@` ...
+	$(MAKEDEPENDS)  $< $(OBJDIR)/$*.o $@ $(INCLUDES)
+
+$(DEPDIR)/%.d: $(SRC_DIR)/%.C
+	@echo Building Depends File `basename $@` ...
+	$(MAKEDEPENDS)  $< $(OBJDIR)/$*.o $@ $(INCLUDES)
+
+$(DEPDIR)/%.d: $(SRC_DIR)/%.cxx
+	@echo Building Depends File `basename $@` ...
+	$(MAKEDEPENDS)  $< $(OBJDIR)/$*.o $@ $(INCLUDES)

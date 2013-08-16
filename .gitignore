@@ -11,3 +11,11 @@
 *.lai
 *.la
 *.a
+
+# build folder
+build
+
+# auto tools' file
+autom4te.cache
+config.log
+config.status
