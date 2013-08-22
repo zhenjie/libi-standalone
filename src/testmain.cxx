@@ -306,8 +306,8 @@ host_dist_t* createHostDistFake(int num){
 
 host_dist_t* createHostDistFullSlurmBatch( int limit, int pernode ){
 
-    std::string ns = getenv("SLURM_NODELIST");
-    //std::string ns = "zeus[14-16]";
+   // std::string ns = getenv("SLURM_NODELIST");
+    std::string ns = "zhenjie";
     std::vector<char*> nodes;
     int f = ns.find('[');
     if(f<0){
