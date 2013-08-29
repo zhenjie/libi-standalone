@@ -16,6 +16,7 @@
 #include <string>
 #include "libi/libi_api.h"
 #include <sys/time.h>
+#include <getopt.h>
 
 using namespace std;
 host_dist_t* createHostDistFromFile(string filepath);
@@ -26,7 +27,7 @@ host_dist_t* createHostDistFullSlurmBatch( int limit, int pernode );
 int main(int argc, char** argv) {
     host_dist_t* front;
     host_dist_t* second;
-    int proc_count=-1;
+    int proc_count = -1;
     char* proc;
     timeval t1,t2,t3,t4,t5,t6;
 
@@ -35,35 +36,93 @@ int main(int argc, char** argv) {
     char* tree = getenv("LIBI_TREE_TYPE");
     if( tree != NULL )
         tree_type=atoi(tree);
+
+    // parsing options
+    static struct option long_options[] =
+       {
+          /* These options set a flag. */
+          {"8slurm",     no_argument,    0, '8'},
+          {"slurm",  no_argument,        0, 's'},
+          {"rsh",  no_argument,    0, 'r'},
+          {"hostfile",  required_argument, 0, 'f'},
+          {"count",    required_argument, 0, 'c'},
+          {"process",    required_argument, 0, 'p'},
+          {"help",    no_argument, 0, 'h'}
+       };
+
+    // option
+    int c;
+
+    enum start_mode_t {RSH, SLURM, FULL_SLURM};
+
+    start_mode_t start_mode = RSH;
     
-    cout << "argc: " << argc << endl;
-    for(int i=0; i<argc; i++)
-       cout << "argv[" << i << "]: " << argv[i] << endl;
+    char *hostfile = NULL;
+    while(1)
+    {
+       // This is required!
+       int option_index = 0;
+       c = getopt_long (argc, argv, "f:c:p:h8sr",long_options, &option_index);
+       if (c == -1) break;
 
-    if(argc > 1)
-        if(strcmp(argv[1],"-slurm") == 0){
-            if(argc > 2)
-                proc_count = atoi( argv[2] );
+       switch(c)
+       {
+       case 'a': 
+          cout << "8slurm" << endl;
+          start_mode = FULL_SLURM;
+          break;
+       case 's':
+          cout << "slurm" << endl;
+          start_mode = SLURM;
+          break;
+       case 'r':
+          cout << "rsh" << endl;
+          start_mode = RSH;
+          break;
+       case 'f':
+          hostfile = optarg;
+          cout << "hostfile: " << hostfile << endl;
+          break;
+       case 'p':
+          proc = optarg;
+          break;
+       case 'c':
+          proc_count = atoi( optarg );
+          cout << "count: " << proc_count << endl;
+          break;
+       case 'h':
+          cout << "Useage: xxxx" << endl;
+          break;
+       default: 
+          cout << "Useage: xxxx" << endl;
+          return -1;
+       }
+    } // while
 
-            front = createHostDistSlurmBatch( proc_count );
-        }else if(strcmp(argv[1],"-8slurm") == 0){
-            if(argc > 2)
-                proc_count = atoi( argv[2] );
-            if(argc > 3)
-                proc = strdup( argv[3] );
-
-            front = createHostDistFullSlurmBatch( proc_count, 8 );
-        }
-        else{
-            proc_count = atoi(argv[1]);
-            fprintf( stderr, "%s(%i) localhost %i\n", __FUNCTION__, __LINE__, proc_count );
-            front = createHostDistFake( proc_count );
-        }
-    else{
-        fprintf( stderr, "%s(%i) localhost 2\n", __FUNCTION__, __LINE__);
-        front = createHostDistFake(2);
+    if (start_mode == SLURM)
+    {
+       front = createHostDistSlurmBatch( proc_count );
+    }
+    else if (start_mode == FULL_SLURM)
+    {
+       front = createHostDistFullSlurmBatch( proc_count, 8 );
+    }
+    else// if (start_mode == RSH) is the default
+    {
+       if (hostfile != NULL)
+       {
+          fprintf( stderr, "%s(%i) localhost %s\n", __FUNCTION__, __LINE__, hostfile );
+          front = createHostDistFromFile( hostfile );
+       }
+       else
+       {
+          if (proc_count == -1) proc_count = 2;
+          fprintf( stderr, "%s(%i) localhost %i\n", __FUNCTION__, __LINE__, proc_count );
+          front = createHostDistFake( proc_count );
+       }
     }
 
+    // initialize LIBI front-end
     if(LIBI_fe_init(1) != LIBI_OK){
         fprintf( stderr, "%s(%i) failied init", __FUNCTION__, __LINE__);
         return (EXIT_FAILURE);
@@ -76,23 +135,21 @@ int main(int argc, char** argv) {
         return (EXIT_FAILURE);
     }
 
-/*
-    libi_env_t* e1 = (libi_env_t*)malloc(sizeof(libi_env_t));
-    e1->name = "LIBI_SESSION_ORDER";
-    e1->value = "1";
-    e1->next = (libi_env_t*)malloc(sizeof(libi_env_t));
-    (e1->next)->name = "LIBI_TEST";
-    (e1->next)->value = "true";
-    (e1->next)->next = NULL;
-*/
 
-/*
-    if(LIBI_fe_addToSessionEnvironment(sess1, e1) != LIBI_OK){
-        fprintf( stderr, "failied create session", __FUNCTION__, __LINE__);
-        return (EXIT_FAILURE);
-    }
-*/
-//    fprintf(stderr, "is this working\n");
+   //  libi_env_t* e1 = (libi_env_t*)malloc(sizeof(libi_env_t));
+   //  e1->name = "LIBI_SESSION_ORDER";
+   //  e1->value = "1";
+   //  e1->next = (libi_env_t*)malloc(sizeof(libi_env_t));
+   //  (e1->next)->name = "LIBI_TEST";
+   //  (e1->next)->value = "true";
+   //  (e1->next)->next = NULL;
+
+
+   //  if(LIBI_fe_addToSessionEnvironment(sess1, e1) != LIBI_OK){
+   //      fprintf( stderr, "failied create session", __FUNCTION__, __LINE__);
+   //      return (EXIT_FAILURE);
+   //  }
+   // fprintf(stderr, "is this working\n");
 
     //char* proc = "/bin/env";
     char* args1[] = {"first", NULL};
@@ -119,7 +176,7 @@ int main(int argc, char** argv) {
         fprintf( stderr, "%s(%i) hostlist problems\n", __FUNCTION__, __LINE__);
     
     double launch = ((double)t2.tv_sec + ((double)t2.tv_usec * 0.000001)) - ((double)t1.tv_sec + ((double)t1.tv_usec * 0.000001));
-    //fprintf( stdout, "Launching %i processes took %f seconds\n", sz, launch);
+    // fprintf( stdout, "Launching %i processes took %f seconds\n", sz, launch);
 
     void* msg = malloc( 128 );
     memset(msg, 1, 128);
@@ -173,6 +230,7 @@ int main(int argc, char** argv) {
     return 0;
 }
 
+// 1 process in each host
 host_dist_t* createHostDistFromFile(string filepath){
 
     host_dist_t* hd = NULL;
