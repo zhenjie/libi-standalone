@@ -23,6 +23,7 @@ host_dist_t* createHostDistFromFile(string filepath);
 host_dist_t* createHostDistFake(int num);
 host_dist_t* createHostDistSlurmBatch( int limit );
 host_dist_t* createHostDistFullSlurmBatch( int limit, int pernode );
+void usage();
 
 int main(int argc, char** argv) {
     host_dist_t* front;
@@ -37,6 +38,7 @@ int main(int argc, char** argv) {
     if( tree != NULL )
         tree_type=atoi(tree);
 
+    
     // parsing options
     static struct option long_options[] =
        {
@@ -56,7 +58,7 @@ int main(int argc, char** argv) {
     enum start_mode_t {RSH, SLURM, FULL_SLURM};
 
     start_mode_t start_mode = RSH;
-    
+
     char *hostfile = NULL;
     while(1)
     {
@@ -91,10 +93,10 @@ int main(int argc, char** argv) {
           cout << "count: " << proc_count << endl;
           break;
        case 'h':
-          cout << "Useage: xxxx" << endl;
-          break;
+         usage();
+         return 0;
        default: 
-          cout << "Useage: xxxx" << endl;
+         usage();
           return -1;
        }
     } // while
@@ -436,3 +438,18 @@ host_dist_t* createHostDistFullSlurmBatch( int limit, int pernode ){
     return hd;
 }
 
+
+void usage()
+{
+  cout << "Usage: " << endl
+       << "\t./testmain [-r|-s|-8] [-f hostfile] [-c proc_count] [-p member_exec_pat]" << endl
+       << "\t--rsh or -r =>rsh launch mode " << endl
+       << "\t--slurm or -s  => slurm launch mode " << endl
+       << "\t--8slurm or -8 => full slurm launch mode " << endl
+       << "\t--hostfile path or -f path => specify host file" << endl
+       << "\t--count COUNT or -c COUNT => specify num of process in each host" << endl
+       << "\t--process path or -p path => spefic member executable" << endl 
+       << "\t--help or -h => print out this help message" << endl << endl
+       << "\tUsing -hostfile or -f will ignore --count/-c" << endl
+       << "\tRun testmain without arguments is the same as ./testmain -r -c 2 -p testmember" << endl;
+    }
