@@ -244,9 +244,9 @@ host_dist_t* createHostDistFromFile(string filepath, size_t proc_count = 1){
     string line;
 
     // Note that(in hostfile):
-    // 1. Each line contains a hostname without space arounding;
+    // 1. Each line contains a hostname without surrounding spaces;
     // 2. Might use '\n' to split two hostnames;
-    // 2. Last line cannot be empty;
+    // 3. Last line cannot be empty;
     if(nodefile.is_open())
        {
           while( getline (nodefile,line) )
