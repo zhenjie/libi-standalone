@@ -19,7 +19,7 @@
 #include <getopt.h>
 
 using namespace std;
-host_dist_t* createHostDistFromFile(string filepath);
+host_dist_t* createHostDistFromFile(string filepath, size_t proc_count);
 host_dist_t* createHostDistFake(int num);
 host_dist_t* createHostDistSlurmBatch( int limit );
 host_dist_t* createHostDistFullSlurmBatch( int limit, int pernode );
@@ -113,8 +113,10 @@ int main(int argc, char** argv) {
     {
        if (hostfile != NULL)
        {
-          fprintf( stderr, "%s(%i) localhost %s\n", __FUNCTION__, __LINE__, hostfile );
-          front = createHostDistFromFile( hostfile );
+          if (proc_count == -1) proc_count = 1;
+
+          fprintf( stderr, "%s(%i) hostfile: %s  process on each node: %d\n", __FUNCTION__, __LINE__, hostfile, proc_count);
+          front = createHostDistFromFile( hostfile, proc_count );
        }
        else
        {
@@ -178,7 +180,7 @@ int main(int argc, char** argv) {
         fprintf( stderr, "%s(%i) hostlist problems\n", __FUNCTION__, __LINE__);
     
     double launch = ((double)t2.tv_sec + ((double)t2.tv_usec * 0.000001)) - ((double)t1.tv_sec + ((double)t1.tv_usec * 0.000001));
-    // fprintf( stdout, "Launching %i processes took %f seconds\n", sz, launch);
+    fprintf( stdout, "Launching %i processes took %f seconds\n", sz, launch);
 
     void* msg = malloc( 128 );
     memset(msg, 1, 128);
@@ -232,8 +234,7 @@ int main(int argc, char** argv) {
     return 0;
 }
 
-// 1 process in each host
-host_dist_t* createHostDistFromFile(string filepath){
+host_dist_t* createHostDistFromFile(string filepath, size_t proc_count = 1){
 
     host_dist_t* hd = NULL;
     host_dist_t** cur = &hd;
@@ -247,7 +248,7 @@ host_dist_t* createHostDistFromFile(string filepath){
             (*cur) = (host_dist_t*)malloc(sizeof(host_dist_t));
             getline (nodefile,line);
             (*cur)->hostname = strdup(line.c_str());
-            (*cur)->nproc = 1;
+            (*cur)->nproc = proc_count;
             (*cur)->next = NULL;
             cur = &(*cur)->next;
         }
@@ -450,6 +451,5 @@ void usage()
        << "\t--count COUNT or -c COUNT => specify num of process in each host" << endl
        << "\t--process path or -p path => spefic member executable" << endl 
        << "\t--help or -h => print out this help message" << endl << endl
-       << "\tUsing -hostfile or -f will ignore --count/-c" << endl
        << "\tRun testmain without arguments is the same as ./testmain -r -c 2 -p testmember" << endl;
     }
