@@ -243,17 +243,27 @@ host_dist_t* createHostDistFromFile(string filepath, size_t proc_count = 1){
     nodefile.open(filepath.c_str(), ifstream::in);
     string line;
 
-    if(nodefile.is_open()){
-        while(nodefile.good()){
-            (*cur) = (host_dist_t*)malloc(sizeof(host_dist_t));
-            getline (nodefile,line);
-            (*cur)->hostname = strdup(line.c_str());
-            (*cur)->nproc = proc_count;
-            (*cur)->next = NULL;
-            cur = &(*cur)->next;
-        }
-        nodefile.close();
-    }
+    // Note that(in hostfile):
+    // 1. Each line contains a hostname without space arounding;
+    // 2. Might use '\n' to split two hostnames;
+    // 2. Last line cannot be empty;
+    if(nodefile.is_open())
+       {
+          while( getline (nodefile,line) )
+             {
+                // ignore empty line
+                if(line.empty()) continue; 
+
+                (*cur) = (host_dist_t*)malloc(sizeof(host_dist_t));
+
+                cout << "Hosts in hostfile: " << line << endl;;
+                (*cur)->hostname = strdup(line.c_str());
+                (*cur)->nproc = proc_count;
+                (*cur)->next = NULL;
+                cur = &(*cur)->next;
+             }
+          nodefile.close();
+       }
 
     return hd;
 }
