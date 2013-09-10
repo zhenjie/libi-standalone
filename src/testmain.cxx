@@ -70,27 +70,22 @@ int main(int argc, char** argv) {
        switch(c)
        {
        case 'a': 
-          cout << "8slurm" << endl;
           start_mode = FULL_SLURM;
           break;
        case 's':
-          cout << "slurm" << endl;
           start_mode = SLURM;
           break;
        case 'r':
-          cout << "rsh" << endl;
           start_mode = RSH;
           break;
        case 'f':
           hostfile = optarg;
-          cout << "hostfile: " << hostfile << endl;
           break;
        case 'p':
           proc = optarg;
           break;
        case 'c':
           proc_count = atoi( optarg );
-          cout << "count: " << proc_count << endl;
           break;
        case 'h':
          usage();
@@ -256,7 +251,6 @@ host_dist_t* createHostDistFromFile(string filepath, size_t proc_count = 1){
 
                 (*cur) = (host_dist_t*)malloc(sizeof(host_dist_t));
 
-                cout << "Hosts in hostfile: " << line << endl;;
                 (*cur)->hostname = strdup(line.c_str());
                 (*cur)->nproc = proc_count;
                 (*cur)->next = NULL;
@@ -270,10 +264,9 @@ host_dist_t* createHostDistFromFile(string filepath, size_t proc_count = 1){
 host_dist_t* createHostDistSlurmBatch( int limit ){
 
    // std::string ns = getenv("SLURM_NODELIST");
-    std::string ns = "zhenjie[14-16]";
+   std::string ns = "spider[1-2]";
     std::vector<char*> nodes;
     int f = ns.find('[');
-    cout << "here" <<endl;
     if(f<0){
         char* temp = (char*)malloc((ns.length()+1)*sizeof(char));
         temp = strdup(ns.c_str());

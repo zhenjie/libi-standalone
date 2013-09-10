@@ -21,6 +21,7 @@ debug::debug( bool is_front_end ) {
     _err_file=NULL;
     _file_path=NULL;
     _output_set=false;
+    _print_all = true;
 }
 
 debug::~debug() {
@@ -65,6 +66,32 @@ void debug::print(int msg_level, const char* func, const int line, char* fmt, ..
         fprintf(_err_file, "\n");
         fflush(_err_file);
     }
+}
+
+void debug::print_all(int msg_level, const char* func, const int line, char* fmt, ... )
+{
+    va_list argp;
+
+    if( _print_all ){
+        if( _err_file == NULL )
+            _err_file = stderr;
+        if( _file_path != NULL && !_output_set ){
+            FILE * file = fopen( _file_path, "a" );
+            _err_file = file;
+            _output_set = true;
+        }
+
+        timeval t1;
+        gettimeofday( &t1, NULL );
+        fprintf(_err_file, "%i:%ld.%.6ld:%s:%s(%i) ", getpid(), t1.tv_sec, t1.tv_usec, _identifier, func, line );
+
+        va_start(argp, fmt);
+        vfprintf(_err_file, fmt, argp);
+        va_end(argp);
+
+        fprintf(_err_file, "\n");
+        fflush(_err_file);
+    }   
 }
 
 void debug::set_identifier( char * identifier ){

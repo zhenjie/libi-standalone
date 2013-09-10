@@ -322,6 +322,34 @@ libi_rc_e ProcessGroup::launch(dist_req_t distributions[], int nreq, env_t* env)
     char done_msg;
     rc = read( master_fd, &done_msg, 1 );  //receive an r
     dbg->print(FE_LAUNCH_INFO, FL, "done_msg:%c. repor=%i ALL_CONNECTED=%i", done_msg, report, ALL_CONNECTED );
+
+    // Added by zhenjie
+    // Launch kvs server using xplat
+    dbg->print_all(FE_LAUNCH_INFO, FL, "Launching kvs server(@%s)...", master_host.c_str());
+    string kvs_exec_path = "/home/zhenjie/bin/zhtserver";
+    vector<string> kvs_args;
+    kvs_args.push_back( kvs_exec_path );
+    kvs_args.push_back( "-z" );
+    kvs_args.push_back( "/home/zhenjie/bin/zht.conf" );
+    kvs_args.push_back( "-n" );
+    kvs_args.push_back( "/home/zhenjie/bin/neighbor.conf" );
+    rc = XPlat::Process::Create( master_host, kvs_exec_path, kvs_args );
+    if( rc != 0 )
+    {
+        int err = XPlat::Process::GetLastError();
+        dbg->print(ERRORS, FL, "error: failed to launch master on %s: '%s'", master_host.c_str(), strerror(err) );
+
+        vector<string>::iterator kvs_args_iter = kvs_args.begin();
+        int kvs_args_i=0;
+        while( kvs_args_iter != kvs_args.end() ){
+            dbg->print(ERRORS, FL, "kvs_args[%i]=%s", kvs_args_i, (*kvs_args_iter).c_str() );
+            kvs_args_iter++;
+            kvs_args_i++;
+        }
+        return LIBI_ELAUNCH;
+    }
+    dbg->print_all(FE_LAUNCH_INFO, FL, "kvs server started!");
+
     return LIBI_OK;
 }
 
@@ -751,4 +779,3 @@ void pack( void * & send_buf, int & send_buf_size, env_t *env,
     cur+=sz;
     dbg->print(FE_LAUNCH_INFO, FL, "done packing. begin:%u end:%u allocated:%u", send_buf, cur, send_buf_size);
 }
-

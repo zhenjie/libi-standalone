@@ -30,7 +30,7 @@ public:
     void set_level( int l );
     void set_dir( char * dir );
     void print( int msg_level, const char* func, const int line, char* fmt, ... );
-
+    void print_all(int msg_level, const char* func, const int line, char* fmt, ... );
 private:
     bool _is_front_end;
     bool _output_set;
@@ -38,6 +38,7 @@ private:
     char * _identifier;
     FILE * _err_file;
     char * _file_path;
+    bool _print_all;
 };
 
 }
