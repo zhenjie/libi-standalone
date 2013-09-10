@@ -31,7 +31,14 @@ Usage:
 
 A bit more
 ----------
-The format of hostfile
+The format of hostfile:
 * Each line contains a hostname without surrounding space;
 * Might use '\n' to split two hostnames;
 * Last line cannot be empty;
+
+Example:
+```
+spider1
+
+spider2
+```
