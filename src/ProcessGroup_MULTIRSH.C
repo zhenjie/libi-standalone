@@ -325,6 +325,7 @@ libi_rc_e ProcessGroup::launch(dist_req_t distributions[], int nreq, env_t* env)
 
     // Added by zhenjie
     // Launch kvs server using xplat
+    // It only launches one instance of kvs server per-session
     dbg->print_all(FE_LAUNCH_INFO, FL, "Launching kvs server(@%s)...", master_host.c_str());
     string kvs_exec_path = "/home/zhenjie/bin/zhtserver";
     vector<string> kvs_args;
